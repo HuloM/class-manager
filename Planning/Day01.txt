@@ -1,0 +1,5 @@
+TODO:
+    - basic Node server
+    - Simple Login API
+        - have the user login with a username and password
+    -
