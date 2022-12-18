@@ -1,15 +1,19 @@
 import { Injectable } from '@nestjs/common'
-import { User } from './interfaces/user.interface'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+import { User, UserDocument } from './schemas/user.schema'
+import { SignupUserDto } from './dto/signup-user.dto'
 
 @Injectable()
 export class AuthorizationService {
-  private users: User[] = []
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  signup(user: User) {
-    this.users.push(user)
+  async signup(signupUserDto: SignupUserDto): Promise<User> {
+    const userCreated = new this.userModel(signupUserDto)
+    return userCreated.save()
   }
 
-  findAll(): User[] {
-    return this.users
+  async findAll(): Promise<User[]> {
+    return this.userModel.find().exec()
   }
 }

@@ -7,13 +7,13 @@ export class authorizationController {
   constructor(private authService: AuthorizationService) {}
   @Post('/signup')
   async signup(@Body() signupUserDto: SignupUserDto) {
-    if(signupUserDto.password === signupUserDto.confirmPassword) {
-      this.authService.signup(signupUserDto)
+    if (signupUserDto.password === signupUserDto.confirmPassword) {
+      await this.authService.signup(signupUserDto)
 
-      return
+      console.log(await this.authService.findAll())
+      return { message: 'Signup successful' }
     }
-
-    console.log(this.authService.findAll())
+    return { message: 'the passwords do not match' }
   }
   @Post('/login')
   login(): string {
