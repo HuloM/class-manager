@@ -10,10 +10,32 @@ import { hash, compare } from 'bcrypt'
 export class AuthorizationService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async signup(signupUserDto: SignupUserDto): Promise<User> {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  async signup(signupUserDto: SignupUserDto): Promise<Object> {
+    if (await this.userModel.findOne({ username: signupUserDto.username }))
+      return {
+        Status: 400,
+        message:
+          'A user with this username already exists, please try a new username or try to login',
+      }
+
+    if (await this.userModel.findOne({ email: signupUserDto.email }))
+      return {
+        Status: 400,
+        message: 'A user with this email already exists, please try to login',
+      }
+
     signupUserDto.password = await hash(signupUserDto.password, 12)
     const userCreated = new this.userModel(signupUserDto)
-    return userCreated.save()
+    await userCreated.save()
+
+    return {
+      message: 'Signup successful',
+      user: {
+        username: signupUserDto.username,
+        email: signupUserDto.email,
+      },
+    }
   }
 
   async login(loginUserDto: LoginUserDto): Promise<User> {
@@ -22,7 +44,9 @@ export class AuthorizationService {
     if (loginUserDto.username)
       user = await this.userModel.findOne({ username: loginUserDto.username })
     else user = await this.userModel.findOne({ email: loginUserDto.email })
+
     if (await compare(loginUserDto.password, user.password)) return user
+
     return null
   }
 

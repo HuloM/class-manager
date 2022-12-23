@@ -1,4 +1,10 @@
-import { Controller, Post, Body } from '@nestjs/common'
+import {
+  Controller,
+  Post,
+  Body,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common'
 import { SignupUserDto } from './dto/signup-user.dto'
 import { AuthorizationService } from './authorization.service'
 import { LoginUserDto } from './dto/login-user.dto'
@@ -8,18 +14,14 @@ export class authorizationController {
   constructor(private authService: AuthorizationService) {}
   @Post('/signup')
   async signup(@Body() signupUserDto: SignupUserDto) {
-    if (signupUserDto.password === signupUserDto.confirmPassword) {
-      await this.authService.signup(signupUserDto)
+    const newUser = await this.authService.signup(signupUserDto)
 
-      return {
-        message: 'Signup successful',
-        user: {
-          username: signupUserDto.username,
-          email: signupUserDto.email,
-        },
-      }
+    // @ts-ignore
+    if (newUser.Status === 400) {
+      // @ts-ignore
+      throw new HttpException(newUser.message, HttpStatus.BAD_REQUEST)
     }
-    return { message: 'the passwords do not match' }
+    return newUser
   }
   @Post('/login')
   async login(@Body() loginUserDto: LoginUserDto) {
